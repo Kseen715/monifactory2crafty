@@ -1,0 +1,8 @@
+*.log
+forge-*-installer.jar
+*.zip
+server/*
+temp/
+files-to-add/mods/*
+files-to-add/root/*
+files-to-add/world-zip/*
