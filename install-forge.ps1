@@ -123,7 +123,48 @@ if (Test-Path -Path $craftyZipName) {
 # Compress the contents of the temporary folder
 Compress-Archive -Path server/* -DestinationPath $craftyZipName -CompressionLevel Optimal
 
+# Print Import table in crafty4-table.txt, use tabs to separate columns
+# Server Name\tForge Test
+# Server path\t<path to zip>/forge.zip
+# Select root dir	Select 'forge' or whatever the parent directory of /libraries is
+# Server Executable file	libraries/net/minecraftforge/forge/[your-forge-version-do-not-copy]/[your-forge-version-do-not-copy]-server.jar
+# Min Memory	4GB (or whatever)
+# Max Memory	4GB (or whatever)
+# Server Port	<Your choice, I left as default 25565>
+
+# if fiel already exists, remove it
+if (Test-Path -Path "crafty4-table.txt") {
+    Remove-Item -Path "crafty4-table.txt" -Force
+}
+
+# Create crafty4-table.txt
+
+# Find our
+$serverExecutableFile = Get-ChildItem -Path "server" -Recurse -Filter "*-server.jar"
+# serverExecutableFile should start with libraries/
+$serverExecutableFile = $serverExecutableFile.FullName -replace "server\\", ""
+# crop string to libraries* 
+$serverExecutableFile = $serverExecutableFile -replace ".*libraries", "libraries"
+
+$serverExecutableFile = $serverExecutableFile -replace "\\", "/"
+
+# Like java -Xms6000M -Xmx6000M @libraries/net/minecraftforge/forge/[your-forge-version-do-not-copy]/unix_args.txt nogui
+$serverExecutionCommand = "java -Xms6000M -Xmx6000M @$serverExecutableFile/unix_args.txt nogui"
+
+$craftyTable = @"
+Server Name	                Name for Crafty
+Server path	                $craftyZipName
+Select root dir	            <parent directory of /libraries, should be none for this script>
+Server Executable File      $serverExecutableFile
+Min Memory	                6GB
+Max Memory                  6GB
+Server Execution Command    $serverExecutionCommand
+"@
+
+$craftyTable | Out-File -FilePath "crafty4-table.txt" -Encoding ASCII
+
 
 # Print Finished
 Write-Host "<] Crafty zip created: $craftyZipName"
+Write-Host "<] Crafty table created: crafty4-table.txt"
 Write-Host "<] Finished 💅"
